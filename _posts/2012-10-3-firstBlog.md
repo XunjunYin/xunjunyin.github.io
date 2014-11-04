@@ -3,4 +3,4 @@ layout: post
 title: First Blog
 ---
 
-Welcome to my bolg!
+Welcome to my blog!
