@@ -1,10 +1,7 @@
 ---
 layout: post
-title: Comment Parser
+title: java jdb remote debug - java远程调试
 ---
-
-
-# jdb remote debug - java远程调试
 
 ## 简介 
  * 用log来做调试的方法低效茫目
