@@ -12,4 +12,4 @@ QQ: 408459245
 
 ### Contact me
 
-[email@domain.com](mailto:yinxunjun@gmail.com)
+[yinxunjun@gmail.com](mailto:yinxunjun@gmail.com)
