@@ -5,7 +5,7 @@ title: performance test rules & tools - 性能测试相关工具及规范
 
 ## 压力测试工具 
  * [jmeter](http://jmeter.apache.org/)
- * [Gatling] (http://gatling.io/)
+ * [Gatling](http://gatling.io/)
 
 ## 测试指标
  * 吞吐(qps)
