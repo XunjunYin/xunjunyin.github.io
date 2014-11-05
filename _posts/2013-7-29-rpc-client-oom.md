@@ -12,7 +12,7 @@ title: RPC client OOM - RPC client 内存泄露
 
 * 7.25(周四)晚某web卡死，发现是gc频繁所致，运维重启后服务正常
 * 7.26(周五)对该web增加gc监控，对gc.time.max，gc.tenuredUsed.percent, gc.throughput做监控
-* 7.29(周一)发现tenuredUsed.percent从上周五的40%升至50%. 找运维取jmap并用mat进行分析, 发现一个可疑的约900m的大对象odis.rpc2.RpcClient$ConnectionImpl(old区约4.5g)，其中积存了大量的Call对象（运行三天多后约16*1000=1.6万个）. 该RpcClient为向price server请求的RpcClient
+* 7.29(周一)发现tenuredUsed.percent从上周五的40%升至50%. 找运维取jmap并用mat进行分析, 发现一个可疑的约900m的大对象odis.rpc2.RpcClient$ConnectionImpl(old区约4.5g)，其中积存了大量的Call对象（运行三天多后约16*1000=1.6万个）. 该RpcClient为向rpc server请求的RpcClient
 * 查看odis.rpc2.RpcClient$ConnectionImpl相关code，分析pendingCalls进行put和remove的相关逻辑, 可知：client端的call对象们在完成send后会被put进pendingCalls里wait. 再通过一个后台线程向server读取各个call的结果, 该线程读到某个call的返回时就将该call从pendingCalls里remove
 
 		odis.rpc2.RpcClient$ConnectionImpl部分代码: 
