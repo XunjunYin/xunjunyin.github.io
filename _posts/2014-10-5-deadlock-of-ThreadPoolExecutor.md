@@ -434,8 +434,8 @@ title: deadlock of threadPoolExecutor - ThreadPoolExecutor使用错误导致web�
 	    There are three general strategies for queuing:
 	        Direct handoffs. A good default choice for a work queue is a SynchronousQueue that hands off tasks to threads without otherwise holding them. Here, an attempt to queue a task will fail if no threads are immediately available to run it, so a new thread will be constructed. This policy avoids lockups(死锁) when handling sets of requests that might have internal dependencies. Direct handoffs generally require unbounded maximumPoolSizes to avoid rejection of new submitted tasks. This in turn admits the possibility of unbounded thread growth when commands continue to arrive on average faster than they can be processed.
 	        
-从中可以知道用direct handoffs的方法可以避免线程池因为内部纯程间的依赖而造成的死锁
-* 至此，答案已经较为明了，简言之：'''业务线程在占用了线程池内所有的资源后又向线程池提交了新的任务，并且要等这些任务完成后才释放资源，而这些新提交的任务根本就没机会被完成！！！'''
+* 从中可以知道用direct handoffs的方法可以避免线程池因为内部纯程间的依赖而造成的死锁
+* 至此，答案已经较为明了，简言之：**业务线程在占用了线程池内所有的资源后又向线程池提交了新的任务，并且要等这些任务完成后才释放资源，而这些新提交的任务根本就没机会被完成！！！**
 * 好了，我们来验证一下是否确实会这样：
 
 	
