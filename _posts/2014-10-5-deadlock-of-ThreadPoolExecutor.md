@@ -567,8 +567,5 @@ title: deadlock of threadPoolExecutor - ThreadPoolExecutor使用错误导致web�
 		ThreadPoolExecutor(20, 100, keepAliveTime, unit, new LinkedBlockingQueue<Runnable>(1), threadFactory)
 
 
-## TODO
- * 平常并没有该死锁现象，为什么10月2号凌晨会出现呢？猜测是因为依赖服务(如缓存)突然变慢而使得第二层FutureTask的submit变慢导致的，需要进一步查明。
-
 ## 参考资料
  * [ThreadPoolExecutor的java doc](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html)
