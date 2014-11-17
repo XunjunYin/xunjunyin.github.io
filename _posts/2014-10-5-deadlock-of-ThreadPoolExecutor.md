@@ -289,6 +289,7 @@ title: deadlock of threadPoolExecutor - ThreadPoolExecutor使用错误导致web�
 * 同时从上面的stack summary结果中可以看到有257个业务逻辑的线程(以resin-port-开头的线程组)处于waiting状态，说明此时'''所有业务线程均在waiting状态，从而新的业务请求自然会被resin拒绝，造成服务不可用'''
 * 从stack上可以看到所有waiting状态的业务线程都是客户端的首页接口【	at com.xxxxxx.productfront.web.restful.HomeApiController.newInfo(HomeApiController.java:204)
 】，并且都是在对一个Future任务进行FutureTask.get()操作，同时由栈顶可以看出改这些线程都是在对一个队列进行操作时无法继续而使得线程waiting的：
+
 		- parking to wait for  <********> (a java.util.concurrent.FutureTask$Sync)
 		at java.util.concurrent.locks.LockSupport.park(LockSupport.java:156)
 		at java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:811)
