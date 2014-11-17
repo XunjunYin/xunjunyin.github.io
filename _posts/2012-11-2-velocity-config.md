@@ -134,7 +134,7 @@ title: Velocity Config - Velocity配置优化
 ## 经验
 
 * 未设置file.resource.loader.cache=true时，对用户请求的每次响应都将reload一次vm资源(这与velocimacro.library.autoreload=true的效果相同)，从而严重影响性能
-* 在性能测试时, 为寻找系统瓶颈, 可以对服务进行高并发打压，再取到stack进行分析(可借用工具/home/lisn/summaryJstack.pl)
+* 在性能测试时, 为寻找系统瓶颈, 可以对服务进行高并发打压，再取到stack进行分析
 
 ## 参考文献
 
