@@ -21,7 +21,8 @@ title: mem dump中unreachable objects分析
   * 这样可以明显地对二者做对比。
 * 用mat打开（在机群上开了个vncserver，在本地用vncviewer连接上）两份dump,发现两份dump中reachable objects均只有400m不到，而unreachable objects有3G多
 * 观察unreachable objects，按shallow heap大小排序，忽略byte和char等基本类型（复杂类型数据都是由基本类型组成的）发现TreeMap占了300M+，让人怀疑。
-* 然而因为是unreachable的，无法直接查看这些TreeMap的对象，怎么去看到底谁引用它们呢？在代码里grep了一下，发现自己项目中没有任何地方用到TreeMap，从页抢断应该是第三方库用到的。* 从另外一个角度考虑，我可以先看一下reachable objects中TreeMap的引用。
+* 然而因为是unreachable的，无法直接查看这些TreeMap对象的上用。如何才有知道到底谁引用它们呢？在代码里grep了一下，发现自己项目中没有任何地方用到TreeMap，从页抢断应该是第三方库用到的。
+* 从另外一个角度考虑，我可以先看一下reachable objects中TreeMap的引用。
 * 发现其中对treeMap有引用的对象中，个数较多的是JDBC4ResultSet和ShardedJedis。先看前者在unreachable objects中的情况，共有22158个垃圾对象。
 * 在mat的dominator tree中看JDBC4ResultSet的大小，可以知道每个JDBC4ResultSet的retained heap大小为4.928k（也有不同，但出入不大），从而22158个的retained heap大小为22158 * 5k 约100M，远小于heap区的大小，因此不是造成问题的原因，忽略。
 * 再看后者ShardedJedis，从unreachable objects中可以看到共有4214个垃圾对象。
