@@ -76,7 +76,7 @@ title: gdb & strace追踪jdk bug
 		[pid 21747] 17:15:26 mprotect(0x7ff8e1ed5000, 32768, PROT_READ|PROT_WRITE) = 0 <0.000044>
 		[pid 21747] 17:15:26 mprotect(0x7ff8e1edd000, 32768, PROT_READ|PROT_WRITE) = 0 <0.000055>
 		
-* 可以发现mprotect方法调用频繁【结合故障出现之间的系统调用进行对比】，且全在21747的线程内，查看doc可知线次会malloc 32K的内存
+* 可以发现mprotect方法调用频繁【结合故障出现之间的系统调用进行对比】，且全在21747的线程内，查看doc可知每次会malloc 32K的内存
 * 用gdb suspend进程后，查看21747对应的线程，并执行dt得到其堆栈：
 
 		Breakpoint 1, 0x00007ff9e12b14e0 in mprotect () from /lib/x86_64-linux-gnu/libc.so.6
@@ -127,7 +127,7 @@ title: gdb & strace追踪jdk bug
 * 在web启动之后，若先用20的分页进地调用，则会让jvm“预热”的优化该编译优化逻辑，不会触发。而若在web启动之后立刻用200的分页请求，则必然会触发该bug
 * 有必要对jdk源码不同版本进行对比以确认相关逻辑是否已经优化，当然不排队jdk还存在类似隐藏较深的bug
  
-## 相关文章
+## 相关阅读
 * [JVM性能优化-JVM简介](http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&mid=202029662&idx=1&sn=5fbf34c5f4636bbc6712afff94056f41#rd)
 * [JVM性能优化-编译器](http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&mid=202047314&idx=1&sn=92080ce6f14f58103cc81a5c452c68dc#rd)
 
