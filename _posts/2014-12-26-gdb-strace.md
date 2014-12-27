@@ -5,10 +5,10 @@ title: gdb & strace追踪jdk bug
 
 ## 现象
 * java应用的web服务器突然挂掉，无任何jvm相关日志，重启后不久再次挂掉
-* 再次重启，不久后机器挂掉
+* 再次重启，不久后机器挂掉【机器为虚拟机】
 
 ## 相关日志
-* 重启机器后，查看dmesg，可看到有相关信息：
+* 到宿主机器重启机器后，查看dmesg，可看到有相关信息：
 
 		[46019.223344] 3065881 pages non-shared
 		[46019.223348] Out of memory: kill process 16211 (java) score 1135790 or a child
@@ -31,10 +31,10 @@ title: gdb & strace追踪jdk bug
 		[46019.293805]  [<ffffffff812fd1a5>] ? page_fault+0x25/0x30
 
  * 说明进程占用内存过高，被系统的oom_killer强行kill所致
- * 猜测机器会挂的原因是：改进程占用内存快过高，oom_killer来不及动作便已被殃及【机器为虚拟机】
+ * 猜测机器会挂的原因是：改进程占用内存快过高，oom_killer来不及动作便已惨遭殃及
  
 ## 初步分析及方案拟定
-* 尝试再次复现，用remote debug【久经波折后】发现某个分页请求数据的接口会间歇性的触发该现象，用vmstat观察机器内存使用，发现发生问题时内存下降异常迅速，约每秒100M，数十秒内就会吃尽机器所有内存
+* 尝试再次复现，用jdb attach 到java进程进行remote debug，【久经波折后】发现某个分页请求数据的接口会间歇性的触发该现象，用vmstat观察机器内存使用，发现发生问题时内存下降异常迅速，约每秒100M，数十秒内就会吃尽机器所有内存
 * 该java进程Xmx配置为6G，且独占该机器。机器的内存有11G
 * 结合之前的经验，进程占用内存远超Xmx的现象，初步认为很可能是jni所致。将工程中所有最新用到jni的地方review，未能找到明确线索。
 * 在内存急剧下降期间对java进程取mem dump和jstack都未能看到异常现象
@@ -48,7 +48,7 @@ title: gdb & strace追踪jdk bug
   * 停掉strace，用gdb attach到进程，使进程挂起，一方面阻止内存的消耗，另一方面可用于分析 
 
 ## 复现及分析
-* 如上所述方案，通过发现故障期间系统调用异常的地方为：
+* 如上所述方案，得到故障期间系统调用异常的地方为：
 
 		[pid 21832] 17:15:26 clock_gettime(CLOCK_MONOTONIC,  <unfinished ...>
 		[pid 21751] 17:15:26 futex(0x42564324, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 1, {1419585326, 152497000}, ffffffff <unfinished ...>
@@ -76,7 +76,7 @@ title: gdb & strace追踪jdk bug
 		[pid 21747] 17:15:26 mprotect(0x7ff8e1ed5000, 32768, PROT_READ|PROT_WRITE) = 0 <0.000044>
 		[pid 21747] 17:15:26 mprotect(0x7ff8e1edd000, 32768, PROT_READ|PROT_WRITE) = 0 <0.000055>
 		
-* 可以发现mprotect方法调用频繁【结合故障出现之间的系统调用进行对比】，且全在21747的线程内
+* 可以发现mprotect方法调用频繁【结合故障出现之间的系统调用进行对比】，且全在21747的线程内，查看doc可知线次会malloc 32K的内存
 * 用gdb suspend进程后，查看21747对应的线程，并执行dt得到其堆栈：
 
 		Breakpoint 1, 0x00007ff9e12b14e0 in mprotect () from /lib/x86_64-linux-gnu/libc.so.6
@@ -110,9 +110,9 @@ title: gdb & strace追踪jdk bug
 		(gdb) cont
 		Continuing.
 		
-* 分析各frame中各方法名：CompileBroker::compiler_thread_loop(), Compile::Optimize()等，可以看到此时应该与jvm类编译优化相关逻辑有关。结合已有先验知识，知道jvm对类的编译会与调用次数等因素有关。
-* 在mprotect处下断点再cont发现会继续进入改断点
-* 此时基本可认定是jvm的bug，查看机器的jdk版本：
+* 由各frame中各方法名：CompileBroker::compiler_thread_loop(), Compile::Optimize()等，可以推断出此时应该与jvm类编译优化相关逻辑有关。结合已有先验知识，知道jvm对类的编译会与调用次数等因素有关。
+* 在mprotect处下断点再cont发现会继续进入该断点，多次cont依旧如此
+* 至此基本可认定是jvm的bug，查看机器的jdk版本：
 
         java -version
         java version "1.6.0_35"
@@ -122,5 +122,10 @@ title: gdb & strace追踪jdk bug
 * 而1.6最新的为1.6.0_45, 因此先不深究jvm具体的bug所在，先做升级
 * 升级是否修复该故障，且听下回分解:)
 
+## 后续
+* 现在回头来分析该bug触发的逻辑，发现是测试同学为了便于测试，将该分页获取数据接口由每次获取20条改为了每次获取200条。
+* 在web启动之后，若先用20的分页进地调用，则会让jvm“预热”的优化该编译优化逻辑，不会触发。而若在web启动之后立刻用200的分页请求，则必然会触发该bug
+* 有必要对jdk源码不同版本进行对比以确认相关逻辑是否已经优化，当然不排队jdk还存在类似隐藏较深的bug
+
 ## 致谢
-* 感谢[北京新观念技术服务有限公司](http://www.xinitek.com）CEO李斯宁同学提供技术支持与分析讨论
+* 感谢[北京新观念技术服务有限公司](http://www.xinitek.com)CEO李斯宁提供技术支持与分析讨论
