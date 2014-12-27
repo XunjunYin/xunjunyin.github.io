@@ -126,6 +126,10 @@ title: gdb & strace追踪jdk bug
 * 现在回头来分析该bug触发的逻辑，发现是测试同学为了便于测试，将该分页获取数据接口由每次获取20条改为了每次获取200条。
 * 在web启动之后，若先用20的分页进地调用，则会让jvm“预热”的优化该编译优化逻辑，不会触发。而若在web启动之后立刻用200的分页请求，则必然会触发该bug
 * 有必要对jdk源码不同版本进行对比以确认相关逻辑是否已经优化，当然不排队jdk还存在类似隐藏较深的bug
+ 
+## 相关文章
+* [JVM性能优化-JVM简介](http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&mid=202029662&idx=1&sn=5fbf34c5f4636bbc6712afff94056f41#rd)
+* [JVM性能优化-编译器](http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&mid=202047314&idx=1&sn=92080ce6f14f58103cc81a5c452c68dc#rd)
 
 ## 致谢
 * 感谢[北京新观念技术服务有限公司](http://www.xinitek.com)CEO李斯宁提供技术支持与分析讨论
