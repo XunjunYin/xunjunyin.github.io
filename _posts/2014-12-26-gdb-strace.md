@@ -132,8 +132,17 @@ title: gdb & strace追踪jdk bug
 * 决定尝试设置jni相关参数来试图绕过该bug, 于是设置-XX:CompileThreshold=1, 发现bug不再能复现。但同时发现web服务启动时间变长，原因应该是做了大量的编译工作，并且web启动之后，cpu占用波动较大，持续较长时间后才回归平稳————依旧是不断在做编译
 * 另外，根据doc:
 
-		-Xint, -Xcomp, and -Xmixed
-		The two flags -Xint and -Xcomp are not too relevant for our everyday work, but highly interesting in order to learn something about the JVM. The -Xint flag forces the JVM to execute all bytecode in interpreted mode, which comes along with a considerable slowdown, usually factor 10 or higher. On the contrary, the flag -Xcomp forces exactly the opposite behavior, that is, the JVM compiles all bytecode into native code on first use, thereby applying maximum optimization level. This sounds nice, because it completely avoids the slow interpreter. However, many applications will also suffer at least a bit from the use of -Xcomp, even if the drop in performance is not comparable with the one resulting from -Xint. The reason is that by setting-Xcomp we prevent the JVM from making use of its JIT compiler to full effect. The JIT compiler creates method usage profiles at run time and then optimizes single methods (or parts of them) step by step, and sometimes speculatively, to the actual application behavior. Some of these optimization techniques, e.g., optimistic branch prediction, cannot be applied effectively without first profiling the application. Another aspect is that methods are only getting compiled at all when they prove themselves relevant, i.e., constitute some kind of hot spot in the application. Methods that are called rarely (or even only once) are continued to be executed in interpreted mode, thus saving the compilation and optimization cost.
+			-Xint, -Xcomp, and -Xmixed
+		The two flags -Xint and -Xcomp are not too relevant for our everyday work, but highly interesting in order to learn something about the JVM. 
+		The -Xint flag forces the JVM to execute all bytecode in interpreted mode, which comes along with a considerable slowdown, usually factor 10 or higher. 
+		On the contrary, the flag -Xcomp forces exactly the opposite behavior, that is, the JVM compiles all bytecode into native code on first use, thereby applying maximum optimization level. 
+		This sounds nice, because it completely avoids the slow interpreter. 
+		However, many applications will also suffer at least a bit from the use of -Xcomp, even if the drop in performance is not comparable with the one resulting from -Xint. 
+		The reason is that by setting-Xcomp we prevent the JVM from making use of its JIT compiler to full effect.
+		The JIT compiler creates method usage profiles at run time and then optimizes single methods (or parts of them) step by step, and sometimes speculatively, to the actual application behavior. 
+		Some of these optimization techniques, e.g., optimistic branch prediction, cannot be applied effectively without first profiling the application. 
+		Another aspect is that methods are only getting compiled at all when they prove themselves relevant, i.e., constitute some kind of hot spot in the application. 
+		Methods that are called rarely (or even only once) are continued to be executed in interpreted mode, thus saving the compilation and optimization cost.
 
 * 可以知道上述配置或是直接用Xcomp虽然看似可以避免该bug的触发，但会对性能有较大的损伤，因为jit会根据调用次数及性能的统计信息来优化bytecode，如果直接comp就得不到这些统计信息优化的不够好了
 
