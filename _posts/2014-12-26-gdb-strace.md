@@ -120,12 +120,27 @@ title: gdb & strace追踪jdk bug
         Java HotSpot(TM) 64-Bit Server VM (build 20.10-b01, mixed mode)
 
 * 而1.6最新的为1.6.0_45, 因此先不深究jvm具体的bug所在，先做升级
-* 升级是否修复该故障，且听下回分解:)
+* 升级是否修复该故障，且听下回分解:) 
 
 ## 后续
 * 现在回头来分析该bug触发的逻辑，发现是测试同学为了便于测试，将该分页获取数据接口由每次获取20条改为了每次获取200条。
 * 在web启动之后，若先用20的分页进地调用，则会让jvm“预热”的优化该编译优化逻辑，不会触发。而若在web启动之后立刻用200的分页请求，则必然会触发该bug
 * 有必要对jdk源码不同版本进行对比以确认相关逻辑是否已经优化，当然不排队jdk还存在类似隐藏较深的bug
+
+## 下回分解
+* 很悲伤！！！升级jdk（1.6）后该bug依旧存在，说明该bug未被修复
+* 决定尝试设置jni相关参数来试图绕过该bug, 于是设置-XX:CompileThreshold=1, 发现bug不再能复现。但同时发现web服务启动时间变长，原因应该是做了大量的编译工作，并且web启动之后，cpu占用波动较大，持续较长时间后才回归平稳————依旧是不断在做编译
+* 另外，根据doc:
+
+		-Xint, -Xcomp, and -Xmixed
+		The two flags -Xint and -Xcomp are not too relevant for our everyday work, but highly interesting in order to learn something about the JVM. The -Xint flag forces the JVM to execute all bytecode in interpreted mode, which comes along with a considerable slowdown, usually factor 10 or higher. On the contrary, the flag -Xcomp forces exactly the opposite behavior, that is, the JVM compiles all bytecode into native code on first use, thereby applying maximum optimization level. This sounds nice, because it completely avoids the slow interpreter. However, many applications will also suffer at least a bit from the use of -Xcomp, even if the drop in performance is not comparable with the one resulting from -Xint. The reason is that by setting-Xcomp we prevent the JVM from making use of its JIT compiler to full effect. The JIT compiler creates method usage profiles at run time and then optimizes single methods (or parts of them) step by step, and sometimes speculatively, to the actual application behavior. Some of these optimization techniques, e.g., optimistic branch prediction, cannot be applied effectively without first profiling the application. Another aspect is that methods are only getting compiled at all when they prove themselves relevant, i.e., constitute some kind of hot spot in the application. Methods that are called rarely (or even only once) are continued to be executed in interpreted mode, thus saving the compilation and optimization cost.
+
+* 可以知道上述配置或是直接用Xcomp虽然看似可以避免该bug的触发，但会对性能有较大的损伤，因为jit会根据调用次数及性能的统计信息来优化bytecode，如果直接comp就得不到这些统计信息优化的不够好了
+
+## 处理方案
+* 不做处理：考虑到之前线上服务表现平稳，从未触发该bug，以及该bug要么在服务启动之后尽快出现，要么不会出现，因此暂不做优化调整，而是上线后观察两三分钟，不触发该bug才认为上线成功
+* 给oracle报bug
+* 考虑升级jdk到1.7或1.8
  
 ## 相关阅读
 * [JVM性能优化-JVM简介](http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&mid=202029662&idx=1&sn=5fbf34c5f4636bbc6712afff94056f41#rd)
