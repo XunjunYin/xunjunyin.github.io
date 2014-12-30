@@ -158,7 +158,7 @@ title: gdb & strace追踪jdk bug
 * [JVM性能优化4-C4垃圾回收](http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&mid=202109974&idx=1&sn=c559222b5d7b9477f011feb15b14f797#rd)
 * [JVM性能优化5-Java的伸缩性](http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&mid=202127705&idx=1&sn=bfb366d8af6c03f61e46664d28af7d3a#rd)
 * [Useful JVM Flags 1-JVM Types and Compiler Modes](https://blog.codecentric.de/en/2012/07/useful-jvm-flags-part-1-jvm-types-and-compiler-modes/)
-* [Useful JVM Flags 2-[Useful JVM Flags-JVM Types and Compiler Modes](https://blog.codecentric.de/en/2012/07/useful-jvm-flags-part-2-flag-categories-and-jit-compiler-diagnostics/)
+* [Useful JVM Flags 2-JVM Types and Compiler Modes](https://blog.codecentric.de/en/2012/07/useful-jvm-flags-part-2-flag-categories-and-jit-compiler-diagnostics/)
 * [Useful JVM Flags 3-Printing all XX Flags and their Values](https://blog.codecentric.de/en/2012/07/useful-jvm-flags-part-3-printing-all-xx-flags-and-their-values/)
 * [Useful JVM Flags 4-Heap Tuning](https://blog.codecentric.de/en/2012/07/useful-jvm-flags-part-4-heap-tuning/)
 * [Useful JVM Flags 5-Young Generation Garbage Collection](https://blog.codecentric.de/en/2012/08/useful-jvm-flags-part-5-young-generation-garbage-collection/)
