@@ -129,7 +129,7 @@ title: gdb & strace追踪jdk bug
 
 ## 下回分解
 * 很悲伤！！！升级jdk（1.6）后该bug依旧存在，说明该bug未被修复
-* 决定尝试设置jni相关参数来试图绕过该bug, 于是设置-XX:CompileThreshold=1, 发现bug不再能复现。但同时发现web服务启动时间变长，原因应该是做了大量的编译工作，并且web启动之后，cpu占用波动较大，持续较长时间后才回归平稳————依旧是不断在做编译
+* 决定尝试设置jit相关参数来试图绕过该bug, 于是设置-XX:CompileThreshold=1, 发现bug不再能复现。但同时发现web服务启动时间变长，原因应该是做了大量的编译工作，并且web启动之后，cpu占用波动较大，持续较长时间后才回归平稳————依旧是不断在做编译
 * 另外，根据doc:
 
 			-Xint, -Xcomp, and -Xmixed
