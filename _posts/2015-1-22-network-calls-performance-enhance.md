@@ -4,19 +4,18 @@ title: 网络操作的性能优化
 ---
 
 ### 先贴上优化前后的对比图（优化于1月15日上线，19日又上线了一些细节的优化）：
- * web服务器的cpu使用
- ![web服务器 cpu使用](http://yinxj.qiniudn.com/front.cpu.png)
- * web服务器的load 
- ![web服务器 load](http://yinxj.qiniudn.com/front.load.png)
- * rpc的连接数（主要是与redis的连接） 
- ![rpc的连接数](http://yinxj.qiniudn.com/rpc.tpc.num.png)
- * redis服务的cpu使用
- ![redis服务的cpu使用](http://yinxj.qiniudn.com/redis.cpu.png)
- * redis所在机器的连接数
- ![redis所在机器的连接数](http://yinxj.qiniudn.com/redis.tcp.num.png)
+* web服务器的cpu使用
+![web服务器 cpu使用](http://yinxj.qiniudn.com/front.cpu.png)
+* web服务器的load 
+![web服务器 load](http://yinxj.qiniudn.com/front.load.png)
+* rpc的连接数（主要是与redis的连接） 
+![rpc的连接数](http://yinxj.qiniudn.com/rpc.tpc.num.png)
+* redis服务的cpu使用
+![redis服务的cpu使用](http://yinxj.qiniudn.com/redis.cpu.png)
+* redis所在机器的连接数
+![redis所在机器的连接数](http://yinxj.qiniudn.com/redis.tcp.num.png)
 
 ### 现象
-
 * 某产品由于某些因素（运营，版本更新及体验等）使得活跃用户及停留时间不断提高，进而使得服务器资源使用增长，原先设定的报警阈值频繁被触发，具体表现为：
   * web机器的load与cpu使用都变高
   * 依赖的缓存服务redis连接数与cpu不断攀升
@@ -28,7 +27,6 @@ title: 网络操作的性能优化
 * ——考虑到线上服务尚未出现功能性问题，先尝试第二种方式
 
 ### 定位瓶颈
-
 * 参考我之前的blog，对线上各服务（均为java进程）取jstack并用stackAnalysis工具分析其瓶颈，发现许多线程都停留在对redis的操作上
 * 很显然，redis的大量请求是瓶颈
 
