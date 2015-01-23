@@ -3,7 +3,7 @@ layout: post
 title: BeanShell Sampler - Jmeter
 ---
 
-## 用prop来存放对象供多线程共用
+### 用prop来存放对象供多线程共用
 * 在用jmeter打压力时，由于是做rpc调用的请求，用beanshell sampler来发送请求，脚本如下
 
 		import com.netease.love.timeline.ITimelineProtocol;

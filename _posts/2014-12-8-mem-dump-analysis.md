@@ -3,11 +3,11 @@ layout: post
 title: mem dump中unreachable objects分析
 ---
 
-## 现象
+### 现象
 
 * 某个大版本上线后，某服务频繁报警: load过高，但很快就会恢复，即间歇性load过高，原因难以定位。
 
-## 观察
+### 观察
 
 * 从报警系统观察报警时间分布，有一些周期性，但周期会在1小时到2小时之间，不稳定
   * 初步排除是定时任务导致
@@ -16,7 +16,7 @@ title: mem dump中unreachable objects分析
 * 该现象是上线后才出现的，可以认定是业务逻辑所致。着重查看了业务逻辑的diff，因业务逻辑改动较多，未能直接找到原因。
 * 既然是GC所致，就先看看GC为何这么慢吧！
 
-## 初步定位
+### 初步定位
 * 用jmap做了两份内存的dump，一份是old快满（用jstat来实时观察）即即将发生full gc之前的dump，另一份是GC刚刚结束的dump
   * 这样可以明显地对二者做对比。
 * 用mat打开（在机群上开了个vncserver，在本地用vncviewer连接上）两份dump,发现两份dump中reachable objects均只有400m不到，而unreachable objects有3G多
@@ -29,7 +29,7 @@ title: mem dump中unreachable objects分析
 * 同时从dominator tree中可以看出每个ShardedJedis的Retained heap大小为323k,从而4214个的retained heap大小的4214*323k约为1.4G
 * 至此，可以基本认定sharedeJedis为主要的垃圾，load间歇性过高的原因正是因为这些垃圾快速的生成和回收所致。
 
-## 进一步分析
+### 进一步分析
 * 看一下我们对SharededJedisPool的配置：
 
 		#最大分配的对象数
@@ -89,5 +89,5 @@ title: mem dump中unreachable objects分析
 * 再追溯这个50到250的改动，实际上是可以很简单的做优化的。
 * 至此，问题定位到，优化并上线，不再频繁出现load过高的问题，即GC不再如此频繁
 
-## 经验
+### 经验
 * 解决一个性能问题好比侦察案件，可以多采集利用分析各种信息，不要死磕。虽然最终发现问题很简单，并一开始就认定问题出在业务逻辑上，可几个人花了不少时间去查代码，都没能找到原因。（该问题被一些设计模式“隐藏”的较深）

@@ -3,11 +3,11 @@ layout: post
 title: performance test rules & tools - 性能测试相关工具及规范
 ---
 
-## 压力测试工具 
+### 压力测试工具 
  * [jmeter](http://jmeter.apache.org/)
  * [Gatling](http://gatling.io/)
 
-## 测试指标
+### 测试指标
  * 吞吐(qps)
  * .avg响应时间及.99(.999)响应时间
  * 失败率
@@ -17,11 +17,11 @@ title: performance test rules & tools - 性能测试相关工具及规范
  * 数据下载时间
  * 服务启动时间
 
-### 指标确定
+#### 指标确定
  * 新增接口：pv预估with pm, 一般要求.99在1s内
  * 改动接口: 一般不应差于线上
 
-### 测试内容
+#### 测试内容
  * 服务启动时间测试
    * 服务从启动到可正常服务的时间(多少分钟多少秒)
  * 接口测试
@@ -51,7 +51,7 @@ title: performance test rules & tools - 性能测试相关工具及规范
    * 内存使用测试
      * 取jmap -dump:file=mem.dump <pid>, 再用mat分析其中top10（或topN)的对象，判断其数量及大小是否合理
 
-### 检查
+#### 检查
  * db索引检查
  * 连接池线程池的检查
  * 代码严重静态bug检查, husdon + findbugs
@@ -64,7 +64,7 @@ title: performance test rules & tools - 性能测试相关工具及规范
    * 数据量(mysql, index, etc.)
    * 熟悉代码及功能，保证代码分支的覆盖程度
 
-### 工具
+#### 工具
  * vmstat
    * vmstat reports information about processes, memory, paging, block IO, traps, and cpu activity.
  * jstack

@@ -3,11 +3,11 @@ layout: post
 title: gdb & strace追踪jdk bug
 ---
 
-## 现象
+### 现象
 * java应用的web服务器突然挂掉，无任何jvm相关日志，重启后不久再次挂掉
 * 再次重启，不久后机器挂掉【机器为虚拟机】
 
-## 相关日志
+### 相关日志
 * 到宿主机器重启机器后，查看dmesg，可看到有相关信息：
 
 		[46019.223344] 3065881 pages non-shared
@@ -33,7 +33,7 @@ title: gdb & strace追踪jdk bug
  * 说明进程占用内存过高，被系统的oom_killer强行kill所致
  * 猜测机器会挂的原因是：该进程占用内存过快过高，oom_killer来不及动作便已惨遭殃及
  
-## 初步分析及方案拟定
+### 初步分析及方案拟定
 * 尝试再次复现，用jdb attach 到java进程进行remote debug，【久经波折后】发现某个分页请求数据的接口会间歇性的触发该现象，用vmstat观察机器内存使用，发现发生问题时内存下降异常迅速，约每秒100M，数十秒内就会吃尽机器所有内存
 * 该java进程Xmx配置为6G，且独占该机器。机器的内存有11G
 * 结合之前的经验，进程占用内存远超Xmx的现象，初步认为很可能是jni所致。将工程中所有最新用到jni的地方review，未能找到明确线索。
@@ -47,7 +47,7 @@ title: gdb & strace追踪jdk bug
   * 出现故障时，先用strace打出系统调用，打十秒左右
   * 停掉strace，用gdb attach到进程，使进程挂起，一方面阻止内存的消耗，另一方面可用于分析 
 
-## 复现及分析
+### 复现及分析
 * 如上所述方案，得到故障期间系统调用异常的地方为：
 
 		[pid 21832] 17:15:26 clock_gettime(CLOCK_MONOTONIC,  <unfinished ...>
@@ -122,12 +122,12 @@ title: gdb & strace追踪jdk bug
 * 而1.6最新的为1.6.0_45, 因此先不深究jvm具体的bug所在，先做升级
 * 升级是否修复该故障，且听下回分解:) 
 
-## 后续
+### 后续
 * 现在回头来分析该bug触发的逻辑，发现是测试同学为了便于测试，将该分页获取数据接口由每次获取20条改为了每次获取200条。
 * 在web启动之后，若先用20的分页进地调用，则会让jvm“预热”的优化该编译优化逻辑，不会触发。而若在web启动之后立刻用200的分页请求，则必然会触发该bug
 * 有必要对jdk源码不同版本进行对比以确认相关逻辑是否已经优化，当然不排队jdk还存在类似隐藏较深的bug
 
-## 下回分解
+### 下回分解
 * 很悲伤！！！升级jdk（1.6）后该bug依旧存在，说明该bug未被修复
 * 决定尝试设置jni相关参数来试图绕过该bug, 于是设置-XX:CompileThreshold=1, 发现bug不再能复现。但同时发现web服务启动时间变长，原因应该是做了大量的编译工作，并且web启动之后，cpu占用波动较大，持续较长时间后才回归平稳————依旧是不断在做编译
 * 另外，根据doc:
@@ -146,12 +146,12 @@ title: gdb & strace追踪jdk bug
 
 * 可以知道上述配置或是直接用Xcomp虽然看似可以避免该bug的触发，但会对性能有较大的损伤，因为jit会根据调用次数及性能的统计信息来优化bytecode，如果直接comp就得不到这些统计信息优化的不够好了
 
-## 处理方案
+### 处理方案
 * 不做处理：考虑到之前线上服务表现平稳，从未触发该bug，以及该bug要么在服务启动之后尽快出现，要么不会出现，因此暂不做优化调整，而是上线后观察两三分钟，不触发该bug才认为上线成功
 * 给oracle报bug
 * 考虑升级jdk到1.7或1.8
  
-## 相关阅读
+### 相关阅读
 * [JVM性能优化1-JVM简介](http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&mid=202029662&idx=1&sn=5fbf34c5f4636bbc6712afff94056f41#rd)
 * [JVM性能优化2-编译器](http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&mid=202047314&idx=1&sn=92080ce6f14f58103cc81a5c452c68dc#rd)
 * [JVM性能优化3-垃圾回收](http://mp.weixin.qq.com/s?__biz=MjM5NzMyMjAwMA==&mid=202093140&idx=1&sn=280bb4e93f7e020d6cdfbbd55de0e3e5#rd)
@@ -166,5 +166,5 @@ title: gdb & strace追踪jdk bug
 * [Useful JVM Flags 7-CMS Collector](https://blog.codecentric.de/en/2013/10/useful-jvm-flags-part-7-cms-collector/)
 * [Useful JVM Flags 8-GC Logging](https://blog.codecentric.de/en/2014/01/useful-jvm-flags-part-8-gc-logging/)
 
-## 致谢
+### 致谢
 * 感谢[北京新观念技术服务有限公司](http://www.xinitek.com)CEO李斯宁提供技术支持与分析讨论

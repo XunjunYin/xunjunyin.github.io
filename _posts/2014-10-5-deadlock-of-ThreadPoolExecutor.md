@@ -3,11 +3,11 @@ layout: post
 title: deadlock of threadPoolExecutor - ThreadPoolExecutor使用错误导致web服务器卡死
 ---
 
-## 背景
+### 背景
  * 10月2号凌晨12:08收到报警，所有请求失败，处于完全不可用状态
  * 应用服务器共四台resin，resin之前由四台nginx做负载均衡
 
-## 服务器现象及故障恢复步骤
+### 服务器现象及故障恢复步骤
 * 登入服务器，观察resin进程，初看无任何异常，且占用资源正常，有非业务逻辑相关（一些schedule task）的日志输出，但无业务逻辑相关的日志。
   * 表明resin服务器没有在处理（新的）用户的请求
 * 重启resin，并观察日志，发现resin开始处理业务，基本恢复
@@ -26,12 +26,12 @@ title: deadlock of threadPoolExecutor - ThreadPoolExecutor使用错误导致web�
 * 服务再次恢复，观察一小时多后也不再出现问题
 * 至此，认为故障已经恢复
 
-## 疑问
+### 疑问
 * resin进程恢复后为何又会再次故障？
 * 最后一次上线是9月29号下午，如果是业务实现的问题，为何这之间一直没出问题？
 * 重启nginx究竟影响了什么？难道nginx与resin内部会存在什么神奇的逻辑关联？
 
-## 定位分析
+### 定位分析
 * 对服务异常时取的jstack进行分析(在机群上用我之前写的一个stack分析脚本stackAnalysis，在命令行直接执行stackAnalysis即可), 发现resin的业务线程部分的summary如下:
 
 	    name=resin-port-*****-*****
@@ -558,10 +558,10 @@ title: deadlock of threadPoolExecutor - ThreadPoolExecutor使用错误导致web�
 
 可见确实会造成'''死锁'''，而如果去掉f1和f2内的sleep延时，而把延时放到f2之前，则f1, f2, f3, f4均能成功完成。
 
-## 结论
+### 结论
 * 因为threadPoolExecutor使用了内部依赖，使得业务线程在占用了线程池内所有的资源后又向线程池提交了新的任务，并且要等这些任务完成后才释放资源，而这些新提交的任务根本就没机会被完成，从而造成业务线程没法完成，进而导致web服务器的业务线程耗尽，不再接受新的业务请求，即整个服务不可用。
 
-## 如何处理
+### 如何处理
 * 解决死锁：
   * 方法一：去掉threadPoolExecutor的内部依赖，每一层的future用各种的threadPoolExecutor，但现在各层层次较乱，即使现在理清了也很容易在之后被勿用。
   * 方法二：将maxPoolSize设为maximumPoolSize —— 不建议，耗用资源太多
@@ -581,5 +581,5 @@ title: deadlock of threadPoolExecutor - ThreadPoolExecutor使用错误导致web�
 		ThreadPoolExecutor(20, 100, keepAliveTime, unit, new LinkedBlockingQueue<Runnable>(1), threadFactory)
 
 
-## 参考资料
+### 参考资料
  * [ThreadPoolExecutor的java doc](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html)

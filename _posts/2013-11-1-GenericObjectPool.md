@@ -3,7 +3,7 @@ layout: post
 title: GenericObjectPool使用优化
 ---
 
-## 背景
+### 背景
 
 * 某应用1.0性能测试
 * 服务强依赖于mysql, 许多接口都会请求mysql
@@ -20,7 +20,7 @@ title: GenericObjectPool使用优化
 		 87             connectionPool
 		 88                 .setTimeBetweenEvictionRunsMillis(timeBetweenEvictionRunsMillis);
 
-## 问题
+### 问题
 
 * 用100并发打压服务，发现拿到连接并在干活的线程数只有10+, 而其余80+的线程wait在borrowObject的逻辑, 相应的stack如下：
 
@@ -94,7 +94,7 @@ title: GenericObjectPool使用优化
 		......
 
 
-## 分析
+### 分析
 * 为什么maxActive设置为100, 还会有如此多的线程在makeObject?这是我们的setMaxActive没有生效, 还是GenericObjectPool有其他destroy对象的机制被我们忽略了?
 * 查看GenericObjectPool的java doc, 了解对象池关于对象创建和销毁相关的方式以及配置方式
 * 打压开始后, 动态debug, 发现pool对象有许多我们未进行配置的成员变量，对照doc逐一check各变量
@@ -105,7 +105,7 @@ title: GenericObjectPool使用优化
 * 可知默认的maxIdle值为8，若未进行配置，当pool中idle的object超过默认值8时，多余的对象就会被destroy
 * 至此，问题基本定位到
 
-## 验证
+### 验证
 
 * 增加对maxIdle的配置，即：
  
@@ -123,7 +123,7 @@ title: GenericObjectPool使用优化
 		 
 * 重新打压, 发现吞吐增长近一倍，响应速度也显著加快，stack中无线程blocked在borrowObject或makeObject相关的逻辑
 
-## 另一个重要的问题
+### 另一个重要的问题
 
 * 未设置maxWait, doc中对maxWait说明如下：
  
@@ -159,5 +159,5 @@ title: GenericObjectPool使用优化
 		 89             connectionPool
 		 90                 .setTimeBetweenEvictionRunsMillis(timeBetweenEvictionRunsMillis);
 
-## 参考文档
+### 参考文档
 * [GenericObjectPool的java doc](http://commons.apache.org/proper/commons-pool/api-1.6/org/apache/commons/pool/impl/GenericObjectPool.html)

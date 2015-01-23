@@ -3,7 +3,7 @@ layout: post
 title: Velocity Config - Velocity配置优化
 ---
 
-## 现象
+### 现象
 
 * 性能测试，发现xx网站首页web接口的响应时间变慢，服务吞吐上不去
 * 压力测试，并发数加大到20左右之后，系统的吞吐就不再增加，进程的cpu占用超过90%
@@ -127,15 +127,15 @@ title: Velocity Config - Velocity配置优化
             </property>
         </bean>
 
-## 验证
+### 验证
 
 * 修改配置后，性能大幅提升,由原来的90qps轻松飚至近300qps
 
-## 经验
+### 经验
 
 * 未设置file.resource.loader.cache=true时，对用户请求的每次响应都将reload一次vm资源(这与velocimacro.library.autoreload=true的效果相同)，从而严重影响性能
 * 在性能测试时, 为寻找系统瓶颈, 可以对服务进行高并发打压，再取到stack进行分析
 
-## 参考文献
+### 参考文献
 
 * [Velocity Developer Guide](http://velocity.apache.org/engine/releases/velocity-1.5/developer-guide.html)

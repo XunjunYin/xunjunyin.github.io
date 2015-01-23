@@ -3,12 +3,12 @@ layout: post
 title: RPC client OOM - RPC client 内存泄露
 ---
 
-## 原因简述
+### 原因简述
 
 * 公司的rpc框架是内部开发并维护的
 * RPC server timeout时不回复机制使得client端大量请求对象一直存活而不被销毁（内存泄露），造成client端内存耗尽
 
-## 现象及分析过程
+### 现象及分析过程
 
 * 7.25(周四)晚某web卡死，发现是gc频繁所致，运维重启后服务正常
 * 7.26(周五)对该web增加gc监控，对gc.time.max，gc.tenuredUsed.percent, gc.throughput做监控
@@ -56,12 +56,12 @@ title: RPC client OOM - RPC client 内存泄露
 
 * jmap中odis.rpc2.RpcClient$ConnectionImpl中有众多的Call对象是因为其未被remove所致, 进一步可推断出是server端没有将call的请求回写导致call对象未从pendingCalls里remove. 与rpc相应开发人员确认: rpc server在处理某个请求时如果发现超时，就会直接结束该请求而不回复, 因此导致了pendingCalls的内存泄漏
 
-## 解决办法
+### 解决办法
 
 * 建议增加一后台线程去遍历pendingCalls，移除已timeout的无用calls -- 与rpc开发人员确认，会提一个issue进行fix
 * 提升的rpc client的性能(超时情况较严重)
 
-## QA
+### QA
 
         Q: 日志里向rpc server请求的timeout数量每天约有4-5万，服务运行近4天，约为10-20w，但对应pendingCalls里的数量只有1.6w，二者的不一致性如何解释？
         A: pendingCalls中未remove的call仅为rpc server发现超时后未回复的请求, server在回写过程中才超时的call是会被remove掉的, 所以pendingCalls中的数量要小于总timeout的数量
@@ -72,7 +72,7 @@ title: RPC client OOM - RPC client 内存泄露
         Q: 测试过程中为什么也没发现这个问题？
         A: 我们曾模拟一些异常环境（如rpc server卡死不响应请求)做测试，但此bug复现的环境则需要rpc server所在的机器有较大负载(忙不过来而超时较多)，但亦能有一定的工作能力(能接收请求)而不是直接卡死(无法接收请求)，这样的环境不是很好模拟。我们之后会多考虑这样的风险
 
-## 经验教训
+### 经验教训
 
 * 运维：服务卡死时 如果知道是内存耗尽所致 最好取一下jmap再重启服务：jmap -dump:file=mem.dump <pid>, 以便更快的定位问题
 * 测试：压力测试时需要深入了解各服务的实现原理，考虑并设计不同的异常环境进行测试，这样才能更好的规避风险
