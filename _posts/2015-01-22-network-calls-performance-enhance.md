@@ -1,9 +1,9 @@
 ---
-layout: post
+layout: post 
 title: 网络操作的性能优化
 ---
 
-### 先贴上优化前后的对比图（优化于1月15日上线，19日上了一些细节的优化）：
+### 先贴上优化前后的对比图（优化于1月15日上线，19日又上线了一些细节的优化）：
  * web服务器的cpu使用
  ![web服务器 cpu使用](http://yinxj.qiniudn.com/front.cpu.png)
  * web服务器的load 
